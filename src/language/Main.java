@@ -7,16 +7,24 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 public class Main {
+    static boolean hadError = false;
+
     public static void main(String[] args) throws IOException {
         switch (args.length) {
             case 0 -> runPrompt();
             case 1 -> runFile(args[0]);
-            default -> System.out.println("Usage: main [script]");
+            default -> {
+                System.out.println("Usage: main [script]");
+                System.exit(64);
+            }
         }
     }
 
     private static void runFile(String path) throws IOException {
         run(Files.readString(Paths.get(path)));
+        if (hadError) {
+            System.exit(65);
+        }
     }
 
     private static void runPrompt() throws IOException {
@@ -26,10 +34,20 @@ public class Main {
             String line = reader.readLine();
             if (line == null) break;
             run(line);
+            hadError = false;
         }
     }
 
     private static void run(String source) {
-        // the actual code
+        new Scanner(source).scanTokens().forEach(System.out::println);
+    }
+
+    static void error(int line, String message) {
+        report(line, "", message);
+    }
+
+    private static void report(int line, String where, String message) {
+        System.err.printf("[line %s] Error %s: %s%n", line, where, message);
+        hadError = true;
     }
 }
