@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 public class Main {
     static boolean hadError = false;
@@ -39,11 +40,22 @@ public class Main {
     }
 
     private static void run(String source) {
-        new Scanner(source).scanTokens().forEach(System.out::println);
+        List<Token> tokens = new Scanner(source).scanTokens();
+        Expr expression = new Parser(tokens).parse();
+        if (hadError) return;
+        System.out.println(new AstPrinter().print(expression));
     }
 
     static void error(int line, String message) {
         report(line, "", message);
+    }
+
+    static void error(Token token, String message) {
+        if (token.type() == TokenType.EOF) {
+            report(token.line(), " at end", message);
+        } else {
+            report(token.line(), String.format(" at '%s'", token.lexeme()), message);
+        }
     }
 
     private static void report(int line, String where, String message) {
