@@ -8,7 +8,9 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class Main {
+    private static final Interpreter interpreter = new Interpreter();
     static boolean hadError = false;
+    private static boolean hadRuntimeError = false;
 
     public static void main(String[] args) throws IOException {
         switch (args.length) {
@@ -25,6 +27,9 @@ public class Main {
         run(Files.readString(Paths.get(path)));
         if (hadError) {
             System.exit(65);
+        }
+        if (hadRuntimeError) {
+            System.exit(70);
         }
     }
 
@@ -43,7 +48,7 @@ public class Main {
         List<Token> tokens = new Scanner(source).scanTokens();
         Expr expression = new Parser(tokens).parse();
         if (hadError) return;
-        System.out.println(new AstPrinter().print(expression));
+        interpreter.interpret(expression);
     }
 
     static void error(int line, String message) {
@@ -56,6 +61,11 @@ public class Main {
         } else {
             report(token.line(), String.format(" at '%s'", token.lexeme()), message);
         }
+    }
+
+    static void runtimeError(RuntimeError error) {
+        System.err.printf("%s\n[line %s]%n", error.getMessage(), error.token.line());
+        hadRuntimeError = true;
     }
 
     private static void report(int line, String where, String message) {
