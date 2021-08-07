@@ -1,0 +1,22 @@
+package language;
+
+enum TokenType {
+    // Single-character tokens
+    OPEN_PAREN, CLOSE_PAREN, OPEN_BRACE, CLOSE_BRACE,
+    COMMA, PERIOD, MINUS, PLUS, SEMICOLON, SLASH, ASTERISK,
+
+    // Comparisons
+    EXCLAMATION, EXCLAMATION_EQUAL,
+    EQUAL, EQUAL_EQUAL,
+    GREATER, GREATER_EQUAL,
+    LESS, LESS_EQUAL,
+
+    // Literals
+    IDENTIFIER, STRING, NUMBER,
+
+    // Keywords
+    AND, CLASS, ELSE, FALSE, FOR, FUNCTION, IF, NIL, OR,
+    PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE,
+
+    EOF
+}

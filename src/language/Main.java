@@ -30,7 +30,7 @@ public class Main {
     private static void runPrompt() throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         while (true) {
-            System.out.println("> ");
+            System.out.print("> ");
             String line = reader.readLine();
             if (line == null) break;
             run(line);
