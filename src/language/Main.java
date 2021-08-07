@@ -46,9 +46,9 @@ public class Main {
 
     private static void run(String source) {
         List<Token> tokens = new Scanner(source).scanTokens();
-        Expr expression = new Parser(tokens).parse();
+        List<Stmt> statements = new Parser(tokens).parse();
         if (hadError) return;
-        interpreter.interpret(expression);
+        interpreter.interpret(statements);
     }
 
     static void error(int line, String message) {
