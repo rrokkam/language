@@ -59,19 +59,39 @@ class Parser {
         return new Stmt.Print(value);
     }
 
-
-    private Expr expression() {
-        if (match(PLUS, ASTERISK, EXCLAMATION_EQUAL, EQUAL, EQUAL_EQUAL, GREATER, GREATER_EQUAL,
-                LESS, LESS_EQUAL, AND, OR)) {
-            Token binaryOperator = advance();
-            Expr right = comparison();
-
-            // Consume error production and don't throw.
-            error(binaryOperator, "Started an expression with a binary operator. Skipped " +
-                    String.format("comparison {%s}", right));
-        }
-        return equality();
+    private Expr expression () {
+        return assignment();
     }
+
+    private Expr assignment() {
+        Expr expr = equality();
+
+        if (match(EQUAL)) {
+            Token equals = previous();
+            Expr value = assignment();
+
+            if (expr instanceof Expr.Variable e) {
+                return new Expr.Assign(e.name, value);
+            }
+
+            error(equals, "Invalid assignment target.");
+        }
+
+        return expr;
+    }
+
+//    private Expr expression() {
+//        if (match(PLUS, ASTERISK, EXCLAMATION_EQUAL, EQUAL, EQUAL_EQUAL, GREATER, GREATER_EQUAL,
+//                LESS, LESS_EQUAL, AND, OR)) {
+//            Token binaryOperator = advance();
+//            Expr right = comparison();
+//
+//            // Consume error production and don't throw.
+//            error(binaryOperator, "Started an expression with a binary operator. Skipped " +
+//                    String.format("comparison {%s}", right));
+//        }
+//        return equality();
+//    }
 
     private Expr equality() {
         Expr expr = comparison();
