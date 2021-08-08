@@ -44,7 +44,18 @@ class Parser {
 
     private Stmt statement() {
         if (match(PRINT)) return printStatement();
+        if (match(OPEN_BRACE)) return new Stmt.Block(block());
         return expressionStatement();
+    }
+
+    private List<Stmt> block() {
+        List<Stmt> statements = new ArrayList<>();
+        while (!check(CLOSE_BRACE) && !isAtEnd()) {
+            statements.add(declaration());
+        }
+
+        consume(CLOSE_BRACE, "Expect '}' after block.");
+        return statements;
     }
 
     private Stmt expressionStatement() {
@@ -59,7 +70,7 @@ class Parser {
         return new Stmt.Print(value);
     }
 
-    private Expr expression () {
+    private Expr expression() {
         return assignment();
     }
 
@@ -79,19 +90,6 @@ class Parser {
 
         return expr;
     }
-
-//    private Expr expression() {
-//        if (match(PLUS, ASTERISK, EXCLAMATION_EQUAL, EQUAL, EQUAL_EQUAL, GREATER, GREATER_EQUAL,
-//                LESS, LESS_EQUAL, AND, OR)) {
-//            Token binaryOperator = advance();
-//            Expr right = comparison();
-//
-//            // Consume error production and don't throw.
-//            error(binaryOperator, "Started an expression with a binary operator. Skipped " +
-//                    String.format("comparison {%s}", right));
-//        }
-//        return equality();
-//    }
 
     private Expr equality() {
         Expr expr = comparison();

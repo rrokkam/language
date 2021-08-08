@@ -140,6 +140,23 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Void visitBlockStmt(Stmt.Block stmt) {
+        executeBlock(stmt.statements, new Environment(environment));
+        return null;
+    }
+
+    private void executeBlock(List<Stmt> statements, Environment environment) {
+        // A bit of a hack. Better: pass down the current environment in the visit methods.
+        Environment previous = this.environment;
+        this.environment = environment;
+        try {
+            statements.forEach(this::execute);
+        } finally {
+            this.environment = previous;
+        }
+    }
+
+    @Override
     public Void visitExpressionStmt(Stmt.Expression stmt) {
         evaluate(stmt.expression);
         return null;
