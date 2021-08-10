@@ -156,6 +156,11 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return null;
     }
 
+    @Override
+    public Void visitBreakStmt(Stmt.Break stmt) {
+        throw new BreakStatement();
+    }
+
     private void executeBlock(List<Stmt> statements, Environment environment) {
         // A bit of a hack. Better: pass down the current environment in the visit methods.
         Environment previous = this.environment;
@@ -204,9 +209,15 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Void visitWhileStmt(Stmt.While stmt) {
         while (truthiness(evaluate(stmt.condition))) {
-            execute(stmt.body);
+            try {
+                execute(stmt.body);
+            } catch (BreakStatement e) {
+                break;
+            }
         }
         return null;
     }
+
+    private class BreakStatement extends RuntimeException { }
 }
 

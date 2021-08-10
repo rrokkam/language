@@ -10,6 +10,7 @@ class Parser {
     private static class ParseError extends RuntimeException {}
     private final List<Token> tokens;
     private int current = 0;
+    private int nestedLoopDepth = 0;
 
     Parser(List<Token> tokens) {
         this.tokens = tokens;
@@ -44,12 +45,22 @@ class Parser {
     }
 
     private Stmt statement() {
+        if (match(BREAK)) return breakStatement();
         if (match(PRINT)) return printStatement();
         if (match(WHILE)) return whileStatement();
         if (match(OPEN_BRACE)) return new Stmt.Block(block());
         if (match(IF)) return ifStatement();
         if (match(FOR)) return forStatement();
         return expressionStatement();
+    }
+
+    private Stmt breakStatement() {
+        if (nestedLoopDepth > 0) {
+            consume(SEMICOLON, "Expect ';' after 'break'.");
+            return new Stmt.Break();
+        } else {
+            throw error(previous(), "'break' must be inside a loop.");
+        }
     }
 
     private Stmt forStatement() {
@@ -75,7 +86,13 @@ class Parser {
         }
         consume(CLOSE_PAREN, "Expect ')' after 'for' increment.");
 
-        Stmt body = statement();
+        Stmt body;
+        try {
+            nestedLoopDepth++;
+            body = statement();
+        } finally {
+            nestedLoopDepth--;
+        }
 
         if (increment != null) {
             body = new Stmt.Block(Arrays.asList(body, new Stmt.Expression(increment)));
@@ -96,7 +113,13 @@ class Parser {
         consume(OPEN_PAREN, "Expect '(' after 'while'.");
         Expr condition = expression();
         consume(CLOSE_PAREN, "Expect ')' after 'while' condition.");
-        Stmt body = statement();
+        Stmt body;
+        try {
+            nestedLoopDepth++;
+            body = statement();
+        } finally {
+            nestedLoopDepth--;
+        }
         return new Stmt.While(condition, body);
     }
 
