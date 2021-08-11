@@ -4,14 +4,16 @@ import java.util.List;
 
 public class Function implements Callable {
     private final Stmt.Function declaration;
+    private final Environment closure;
 
-    public Function(Stmt.Function declaration) {
+    public Function(Stmt.Function declaration, Environment closure) {
+        this.closure = closure;
         this.declaration = declaration;
     }
 
     @Override
     public Object call(Interpreter interpreter, List<Object> arguments) {
-        Environment environment = new Environment(interpreter.globals);
+        Environment environment = new Environment(closure);
         for (int i=0; i < arity(); i++) {
             environment.define(declaration.params.get(i).lexeme(), arguments.get(i));
         }
