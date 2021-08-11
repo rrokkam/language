@@ -75,6 +75,21 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Object visitCallExpr(Expr.Call expr) {
+        Object callee = evaluate(expr.callee);
+        if (callee instanceof Function func) {
+            if (expr.arguments.size() != func.arity()) {
+                throw new RuntimeError(expr.paren,
+                        String.format("Expected %s arguments but got %s.",
+                                func.arity(), expr.arguments.size()));
+            }
+
+            return func.call(this, expr.arguments.stream().map(this::evaluate).toList());
+        }
+        throw new RuntimeError(expr.paren, "Can only call functions and classes.");
+    }
+
+    @Override
     public Object visitGroupingExpr(Expr.Grouping expr) {
         return evaluate(expr.expression);
     }
@@ -182,7 +197,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     public Void visitIfStmt(Stmt.If stmt) {
         if (truthiness(evaluate(stmt.condition))) {
             execute(stmt.thenBranch);
-        } else if (stmt.elseBranch != null){
+        } else if (stmt.elseBranch != null) {
             execute(stmt.elseBranch);
         }
         return null;
@@ -218,6 +233,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         return null;
     }
 
-    private class BreakStatement extends RuntimeException { }
+    private class BreakStatement extends RuntimeException {
+    }
 }
 

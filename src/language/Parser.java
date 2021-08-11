@@ -255,7 +255,26 @@ class Parser {
             return new Expr.Unary(operator, right);
         }
 
-        return primary();
+        return call();
+    }
+
+    private Expr call() {
+        Expr expr = primary();
+        while (match(OPEN_PAREN)) {
+            List<Expr> arguments = new ArrayList<>();
+            if (!check(CLOSE_PAREN)) {
+                do {
+                    arguments.add(expression());
+                } while (match(COMMA));
+                if (arguments.size() >= 255) {
+                    error(peek(), "Can't have more than 255 arguments.");
+                }
+            }
+            Token paren = consume(CLOSE_PAREN, "Expect ')' after argument list.");
+            expr = new Expr.Call(expr, paren, arguments);
+        }
+
+        return expr;
     }
 
     private Expr primary() {
