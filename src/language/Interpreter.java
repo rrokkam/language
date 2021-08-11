@@ -3,7 +3,27 @@ package language;
 import java.util.List;
 
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
-    private Environment environment = new Environment();
+    final Environment globals = new Environment();
+    private Environment environment = globals;
+
+    Interpreter() {
+        globals.define("clock", new Callable() {
+            @Override
+            public Object call(Interpreter interpreter, List<Object> arguments) {
+                return (double) System.currentTimeMillis() / 1000.0;
+            }
+
+            @Override
+            public int arity() {
+                return 0;
+            }
+
+            @Override
+            public String toString() {
+                return "<native fn>";
+            }
+        });
+    }
 
     private Object evaluate(Expr expr) {
         return expr.accept(this);
@@ -77,7 +97,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Object visitCallExpr(Expr.Call expr) {
         Object callee = evaluate(expr.callee);
-        if (callee instanceof Function func) {
+        if (callee instanceof Callable func) {
             if (expr.arguments.size() != func.arity()) {
                 throw new RuntimeError(expr.paren,
                         String.format("Expected %s arguments but got %s.",
@@ -173,10 +193,10 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitBreakStmt(Stmt.Break stmt) {
-        throw new BreakStatement();
+        throw new Break();
     }
 
-    private void executeBlock(List<Stmt> statements, Environment environment) {
+    void executeBlock(List<Stmt> statements, Environment environment) {
         // A bit of a hack. Better: pass down the current environment in the visit methods.
         Environment previous = this.environment;
         this.environment = environment;
@@ -190,6 +210,13 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Void visitExpressionStmt(Stmt.Expression stmt) {
         evaluate(stmt.expression);
+        return null;
+    }
+
+    @Override
+    public Void visitFunctionStmt(Stmt.Function stmt) {
+        Function function = new Function(stmt);
+        environment.define(stmt.name.lexeme(), function);
         return null;
     }
 
@@ -211,6 +238,15 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Void visitReturnStmt(Stmt.Return stmt) {
+        Object value = null;
+        if (stmt.value != null) {
+            value = evaluate(stmt.value);
+        }
+        throw new Return(value);
+    }
+
+    @Override
     public Void visitVarStmt(Stmt.Var stmt) {
         Object value = null;
         if (stmt.initializer != null) {
@@ -226,14 +262,14 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         while (truthiness(evaluate(stmt.condition))) {
             try {
                 execute(stmt.body);
-            } catch (BreakStatement e) {
+            } catch (Break e) {
                 break;
             }
         }
         return null;
     }
 
-    private class BreakStatement extends RuntimeException {
+    private class Break extends RuntimeException {
     }
 }
 
