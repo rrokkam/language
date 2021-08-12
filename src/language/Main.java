@@ -48,6 +48,8 @@ public class Main {
         List<Token> tokens = new Scanner(source).scanTokens();
         List<Stmt> statements = new Parser(tokens).parse();
         if (hadError) return;
+        new Resolver(interpreter).resolve(statements);
+        if (hadError) return;
         interpreter.interpret(statements);
     }
 
