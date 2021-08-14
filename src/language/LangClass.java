@@ -1,12 +1,15 @@
 package language;
 
 import java.util.List;
+import java.util.Map;
 
 public class LangClass implements Callable {
     final String name;
+    final Map<String, Function> methods;
 
-    LangClass(String name) {
+    LangClass(String name, Map<String, Function> methods) {
         this.name = name;
+        this.methods = methods;
     }
 
     @Override
@@ -22,5 +25,9 @@ public class LangClass implements Callable {
     @Override
     public int arity() {
         return 0;
+    }
+
+    public Function findMethod(String name) {
+        return methods.getOrDefault(name, null);
     }
 }

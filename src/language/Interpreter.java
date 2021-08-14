@@ -237,7 +237,13 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     @Override
     public Void visitClassStmt(Stmt.Class stmt) {
         environment.define(stmt.name.lexeme(), null);
-        LangClass klass = new LangClass(stmt.name.lexeme());
+        Map<String, Function> methods = new HashMap<>();
+        for (Stmt.Function method : stmt.methods) {
+            Function function = new Function(method, environment);
+            methods.put(method.name.lexeme(), function);
+        }
+
+        LangClass klass = new LangClass(stmt.name.lexeme(), methods);
         environment.assign(stmt.name, klass);
         return null;
     }

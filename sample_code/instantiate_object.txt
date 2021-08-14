@@ -1,5 +1,0 @@
-class Bagel {}
-var bagel = Bagel();
-print bagel; // Prints "Bagel instance".
-bagel.topping = "sesame";
-print bagel.topping;
