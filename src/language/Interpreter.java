@@ -123,6 +123,15 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
+    public Object visitGetExpr(Expr.Get expr) {
+        Object object = evaluate(expr.object);
+        if (object instanceof Instance instance) {
+            return instance.get(expr.name);
+        }
+        throw new RuntimeError(expr.name, "Only instances have properties.");
+    }
+
+    @Override
     public Object visitGroupingExpr(Expr.Grouping expr) {
         return evaluate(expr.expression);
     }
@@ -141,6 +150,16 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
             if (!truthiness(left)) return left;
         }
         return evaluate(expr.right);
+    }
+
+    @Override
+    public Object visitSetExpr(Expr.Set expr) {
+        if (evaluate(expr.object) instanceof Instance instance) {
+            Object value = evaluate(expr.value);
+            instance.set(expr.name, value);
+            return value;
+        }
+        throw new RuntimeError(expr.name, "Only instances have fields.");
     }
 
     @Override

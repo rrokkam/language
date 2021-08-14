@@ -214,6 +214,8 @@ class Parser {
 
             if (expr instanceof Expr.Variable e) {
                 return new Expr.Assign(e.name, value);
+            } else if (expr instanceof Expr.Get e) {
+                return new Expr.Set(e.object, e.name, value);
             }
 
             error(equals, "Invalid assignment target.");
@@ -304,18 +306,25 @@ class Parser {
 
     private Expr call() {
         Expr expr = primary();
-        while (match(OPEN_PAREN)) {
-            List<Expr> arguments = new ArrayList<>();
-            if (!check(CLOSE_PAREN)) {
-                do {
-                    arguments.add(expression());
-                } while (match(COMMA));
-                if (arguments.size() >= 255) {
-                    error(peek(), "Can't have more than 255 arguments.");
+        while (true) {
+            if (match(OPEN_PAREN)) {
+                List<Expr> arguments = new ArrayList<>();
+                if (!check(CLOSE_PAREN)) {
+                    do {
+                        arguments.add(expression());
+                    } while (match(COMMA));
+                    if (arguments.size() >= 255) {
+                        error(peek(), "Can't have more than 255 arguments.");
+                    }
                 }
+                Token paren = consume(CLOSE_PAREN, "Expect ')' after argument list.");
+                expr = new Expr.Call(expr, paren, arguments);
+            } else if (match(PERIOD)) {
+                Token name = consume(IDENTIFIER, "Expect property name after '.'.");
+                expr = new Expr.Get(expr, name);
+            } else {
+                break;
             }
-            Token paren = consume(CLOSE_PAREN, "Expect ')' after argument list.");
-            expr = new Expr.Call(expr, paren, arguments);
         }
 
         return expr;

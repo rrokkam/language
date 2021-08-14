@@ -1,7 +1,11 @@
 package language;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class Instance {
     private LangClass klass;
+    private final Map<String, Object> fields = new HashMap<>();
 
     Instance(LangClass klass) {
         this.klass = klass;
@@ -10,5 +14,16 @@ public class Instance {
     @Override
     public String toString() {
         return klass.name + " instance";
+    }
+
+    public Object get(Token name) {
+        if (fields.containsKey(name.lexeme())) {
+            return fields.get(name.lexeme());
+        }
+        throw new RuntimeError(name, String.format("Undefined property %s.", name.lexeme()));
+    }
+
+    public void set(Token name, Object value) {
+        fields.put(name.lexeme(), value);
     }
 }
