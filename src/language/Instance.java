@@ -22,7 +22,7 @@ public class Instance {
         }
         Function method = klass.findMethod(name.lexeme());
         if (method != null) {
-            return method;
+            return method.bind(this);
         }
         throw new RuntimeError(name, String.format("Undefined property %s.", name.lexeme()));
     }
