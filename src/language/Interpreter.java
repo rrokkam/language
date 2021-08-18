@@ -244,7 +244,8 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         environment.define(stmt.name.lexeme(), null);
         Map<String, Function> methods = new HashMap<>();
         for (Stmt.Function method : stmt.methods) {
-            Function function = new Function(method, environment);
+            Function function = new Function(method, environment,
+                    method.name.lexeme().equals("init"));
             methods.put(method.name.lexeme(), function);
         }
 
@@ -277,7 +278,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitFunctionStmt(Stmt.Function stmt) {
-        Function function = new Function(stmt, environment);
+        Function function = new Function(stmt, environment, false);
         environment.define(stmt.name.lexeme(), function);
         return null;
     }

@@ -5,10 +5,12 @@ import java.util.List;
 public class Function implements Callable {
     private final Stmt.Function declaration;
     private final Environment closure;
+    private final boolean isInitializer;
 
-    public Function(Stmt.Function declaration, Environment closure) {
-        this.closure = closure;
+    public Function(Stmt.Function declaration, Environment closure, boolean isInitializer) {
         this.declaration = declaration;
+        this.closure = closure;
+        this.isInitializer = isInitializer;
     }
 
     @Override
@@ -20,7 +22,14 @@ public class Function implements Callable {
         try {
             interpreter.executeBlock(declaration.body, environment);
         } catch (Return e) {
+            if (isInitializer) {
+                return closure.getAt(0, "this");
+            }
             return e.value;
+        }
+
+        if (isInitializer) {
+            return closure.getAt(0, "this");
         }
         return null;
     }
@@ -38,6 +47,6 @@ public class Function implements Callable {
     public Function bind(Instance instance) {
         Environment environment = new Environment(closure);
         environment.define("this", instance);
-        return new Function(declaration, environment);
+        return new Function(declaration, environment, isInitializer);
     }
 }
