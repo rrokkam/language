@@ -6,5 +6,5 @@ while (a < 10000) {
   print a;
   temp = a;
   a = b;
-b = temp + b;
+  b = temp + b;
 }

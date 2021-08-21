@@ -1,12 +1,23 @@
 class Thing {
+  init() {
+    this.field = 3;
+  }
+
   getCallback() {
     function localFunction() {
-      print this;
+      print this.field;
     }
 
     return localFunction;
+  }
+
+  getField() {
+    return this.field;
   }
 }
 
 var callback = Thing().getCallback();
 callback();
+
+var thing = Thing();
+print thing.getField();
