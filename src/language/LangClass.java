@@ -39,6 +39,6 @@ public class LangClass implements Callable {
     }
 
     public Function findMethod(String name) {
-        return methods.getOrDefault(name, null);
+        return methods.getOrDefault(name, superclass == null ? null : superclass.findMethod(name));
     }
 }
