@@ -5,10 +5,12 @@ import java.util.Map;
 
 public class LangClass implements Callable {
     final String name;
+    final LangClass superclass;
     final Map<String, Function> methods;
 
-    LangClass(String name, Map<String, Function> methods) {
+    LangClass(String name, LangClass superclass, Map<String, Function> methods) {
         this.name = name;
+        this.superclass = superclass;
         this.methods = methods;
     }
 
